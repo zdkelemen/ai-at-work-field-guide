@@ -1,0 +1,14 @@
+# Local working folder — source material and superseded drafts, not published
+temp/
+
+# Tooling
+.claude/
+
+# Archives
+*.zip
+
+# OS / editor noise
+Thumbs.db
+desktop.ini
+.DS_Store
+*.swp

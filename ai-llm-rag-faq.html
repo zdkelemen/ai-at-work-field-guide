@@ -1,0 +1,969 @@
+<title>AI-LLM-RAG FAQ</title>
+
+<style>
+  :root {
+    --ink:        #0B2A2F;
+    --paper:      #EFF3F2;
+    --surface:    #FFFFFF;
+    --surface-2:  #E4EBE9;
+    --text:       #10262B;
+    --muted:      #55716F;
+    --hair:       #C6D4D1;
+    --accent:     #C2246B;
+    --accent-soft:#FBE9F1;
+    --warn:       #9A6410;
+    --warn-soft:  #FBF0DC;
+
+    --f-display: "Helvetica Neue Condensed", "HelveticaNeue-CondensedBold", "Arial Narrow", "Liberation Sans Narrow", Helvetica, Arial, sans-serif;
+    --f-body: Georgia, "Iowan Old Style", "Times New Roman", serif;
+    --f-mono: ui-monospace, "Cascadia Mono", "Consolas", "SF Mono", Menlo, monospace;
+
+    --step--1: 0.735rem;
+    --step-0:  0.9rem;
+    --step-1:  1.0625rem;
+    --step-2:  1.3rem;
+    --step-3:  1.75rem;
+    --step-4:  2.5rem;
+    --step-5:  clamp(2.5rem, 7.5vw, 4.5rem);
+
+    --rail: 1px solid var(--hair);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper:      #071417;
+      --surface:    #0D2126;
+      --surface-2:  #123036;
+      --text:       #E4EEEC;
+      --muted:      #86A5A3;
+      --hair:       #1E434A;
+      --accent:     #F0559A;
+      --accent-soft:#2A1220;
+      --warn:       #E0A93F;
+      --warn-soft:  #2A2010;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:#071417; --surface:#0D2126; --surface-2:#123036;
+    --text:#E4EEEC; --muted:#86A5A3; --hair:#1E434A;
+    --accent:#F0559A; --accent-soft:#2A1220; --warn:#E0A93F; --warn-soft:#2A2010;
+  }
+  :root[data-theme="light"] {
+    --paper:#EFF3F2; --surface:#FFFFFF; --surface-2:#E4EBE9;
+    --text:#10262B; --muted:#55716F; --hair:#C6D4D1;
+    --accent:#C2246B; --accent-soft:#FBE9F1; --warn:#9A6410; --warn-soft:#FBF0DC;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--text);
+    font-family: var(--f-body);
+    font-size: var(--step-0);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 1160px; margin: 0 auto; padding: 0 clamp(1rem, 4vw, 3rem) 5rem; }
+
+  .mono {
+    font-family: var(--f-mono);
+    font-size: var(--step--1);
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    font-variant-numeric: tabular-nums;
+  }
+  h1, h2, h3 { font-family: var(--f-display); font-weight: 700; text-wrap: balance; margin: 0; }
+
+  /* ---------- cover ---------- */
+  .cover {
+    border-bottom: 3px solid var(--text);
+    padding: clamp(1.5rem, 4vw, 2.75rem) 0 clamp(1.25rem, 3vw, 2rem);
+    display: grid;
+    gap: 1.5rem;
+  }
+  .cover__top {
+    display: flex; flex-wrap: wrap; gap: 0.75rem 1.5rem;
+    align-items: baseline; justify-content: space-between;
+    color: var(--muted);
+    border-bottom: var(--rail);
+    padding-bottom: 0.65rem;
+  }
+  .cover h1 {
+    font-size: var(--step-5);
+    line-height: 0.9;
+    letter-spacing: -0.03em;
+    text-transform: uppercase;
+  }
+  .cover h1 .dim { color: var(--muted); }
+  .cover h1 .hit { color: var(--accent); }
+  .cover__lede {
+    max-width: 62ch;
+    font-size: var(--step-1);
+    margin: 0;
+  }
+  .cover__lede b { color: var(--accent); font-weight: 700; }
+
+  .scan {
+    height: 3px; background: var(--accent);
+    transform-origin: left;
+    animation: sweep 900ms cubic-bezier(.2,.7,.2,1) both;
+  }
+  @keyframes sweep { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+  @media (prefers-reduced-motion: reduce) { .scan { animation: none; } }
+
+  .spec {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    border: var(--rail);
+    background: var(--surface);
+  }
+  .spec > div { padding: 0.85rem 1rem; border-right: var(--rail); }
+  .spec > div:last-child { border-right: 0; }
+  .spec dt { color: var(--muted); margin: 0 0 0.15rem; }
+  .spec dd {
+    margin: 0;
+    font-family: var(--f-display);
+    font-size: var(--step-3);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---------- docs banner ---------- */
+  .docs {
+    margin-top: 1.5rem;
+    border: 2px solid var(--text);
+    background: var(--surface);
+    padding: clamp(1rem, 2.5vw, 1.5rem);
+    display: grid; gap: 0.85rem;
+  }
+  .docs h2 { font-size: var(--step-2); text-transform: uppercase; letter-spacing: -0.01em; }
+  .docs__list { display: grid; gap: 0.6rem; margin: 0; padding: 0; list-style: none; }
+  .docs__list li {
+    display: grid; grid-template-columns: minmax(0,1fr); gap: 0.15rem;
+    border-left: 3px solid var(--accent); padding-left: 0.8rem;
+  }
+  .docs code {
+    font-family: var(--f-mono); font-size: var(--step--1);
+    background: var(--surface-2); padding: 0.12em 0.4em;
+    overflow-wrap: anywhere;
+  }
+  .docs__note { color: var(--muted); font-style: italic; margin: 0; }
+
+  /* ---------- controls ---------- */
+  .controls {
+    display: flex; flex-wrap: wrap; gap: 0.5rem;
+    align-items: center;
+    padding: 1.5rem 0;
+    border-bottom: var(--rail);
+    position: sticky; top: 0; z-index: 5;
+    background: color-mix(in srgb, var(--paper) 92%, transparent);
+    backdrop-filter: blur(6px);
+  }
+  .chip {
+    font-family: var(--f-mono);
+    font-size: var(--step--1);
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    background: transparent;
+    color: var(--muted);
+    border: var(--rail);
+    padding: 0.4rem 0.7rem;
+    cursor: pointer;
+    line-height: 1;
+  }
+  .chip:hover { color: var(--text); border-color: var(--text); }
+  .chip[aria-pressed="true"] { background: var(--text); color: var(--paper); border-color: var(--text); }
+  .chip:focus-visible, .lang button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .controls__spacer { flex: 1 1 1rem; }
+  .lang { display: flex; border: var(--rail); }
+  .lang button {
+    font-family: var(--f-mono); font-size: var(--step--1); letter-spacing: 0.09em;
+    padding: 0.4rem 0.75rem; background: transparent; color: var(--muted);
+    border: 0; cursor: pointer; line-height: 1;
+  }
+  .lang button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+
+  :root[data-lang="hu"] .en { display: none; }
+  :root:not([data-lang="hu"]) .hu { display: none; }
+
+  /* ---------- domains ---------- */
+  .domain { padding-top: 3rem; }
+  .domain__head {
+    display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.5rem 1rem;
+    border-bottom: 2px solid var(--text);
+    padding-bottom: 0.5rem;
+  }
+  .domain__code { color: var(--accent); }
+  .domain h2 { font-size: var(--step-3); letter-spacing: -0.015em; text-transform: uppercase; }
+  .domain__note { color: var(--muted); font-style: italic; flex: 1 1 14rem; }
+  .domain__count { color: var(--muted); }
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(298px, 1fr));
+    gap: 1px;
+    background: var(--hair);
+    border: var(--rail);
+    border-top: 0;
+  }
+  .card {
+    background: var(--surface);
+    padding: 1.05rem 1.15rem 1.15rem;
+    display: grid;
+    gap: 0.45rem;
+    align-content: start;
+  }
+  .card__id { color: var(--muted); }
+  .card__q {
+    font-family: var(--f-display);
+    font-size: var(--step-1);
+    font-weight: 700;
+    line-height: 1.2;
+  }
+  .card__a { margin: 0; }
+  .card__a b { color: var(--accent); font-weight: 700; }
+  .card--myth { background: var(--warn-soft); }
+  .card--myth .card__id { color: var(--warn); }
+
+  /* ---------- panel ---------- */
+  .panel {
+    margin-top: 3rem;
+    border: 2px solid var(--accent);
+    background: var(--accent-soft);
+    padding: clamp(1.15rem, 3vw, 1.75rem);
+    display: grid; gap: 0.9rem;
+  }
+  .panel h2 { font-size: var(--step-2); text-transform: uppercase; letter-spacing: -0.01em; }
+  .panel__eyebrow { color: var(--accent); }
+  .panel ol { margin: 0; padding-left: 1.4rem; display: grid; gap: 0.55rem; }
+  .panel li::marker { font-family: var(--f-mono); font-size: var(--step--1); color: var(--accent); }
+
+  /* ---------- calibration ---------- */
+  .calib { margin-top: 3rem; }
+  .calib__grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(268px, 1fr));
+    gap: 1px; background: var(--hair); border: var(--rail); border-top: 0;
+  }
+  .calib__item { background: var(--surface); padding: 0.9rem 1rem; display: grid; gap: 0.3rem; }
+  .calib__n { font-family: var(--f-mono); font-size: var(--step--1); color: var(--accent); font-variant-numeric: tabular-nums; }
+  .calib__item p { margin: 0; }
+  .calib__item b { font-family: var(--f-display); font-size: var(--step-1); display: block; }
+
+  footer {
+    margin-top: 3.5rem; padding-top: 1.25rem;
+    border-top: 3px solid var(--text);
+    display: grid; gap: 0.6rem;
+    color: var(--muted);
+  }
+  footer a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+
+  .hidden { display: none !important; }
+</style>
+
+<div class="wrap">
+
+  <header class="cover">
+    <div class="cover__top">
+      <span class="mono">Workplace field guide · Rev. 2.0 · 2026</span>
+      <span class="mono">EN / HU</span>
+    </div>
+    <div class="scan"></div>
+    <h1>AI <span class="dim">·</span> LLM <span class="dim">·</span> RAG<br><span class="hit">FAQ</span></h1>
+    <p class="cover__lede">
+      <span class="en">The questions that actually come up when a team has to build with, decide about, or explain AI — foundations, classic ML, retrieval, agents, data pipelines, MLOps, cost, automation tooling and governance. Each card gives the <b>one line that matters</b>; the full explanation is in the companion guides.</span>
+      <span class="hu">Azok a kérdések, amelyek valóban előjönnek, amikor egy csapatnak AI-jal kell építenie, döntenie róla vagy elmagyaráznia — alapok, klasszikus ML, retrieval, ágensek, adatpipeline-ok, MLOps, költség, automatizálási eszközök és governance. Minden kártya <b>azt az egy mondatot</b> adja, ami számít; a részletes magyarázat a kísérő kisokosokban van.</span>
+    </p>
+    <dl class="spec">
+      <div><dt class="mono en">Questions</dt><dt class="mono hu">Kérdés</dt><dd>60</dd></div>
+      <div><dt class="mono en">Topics</dt><dt class="mono hu">Terület</dt><dd>11</dd></div>
+      <div><dt class="mono en">Languages</dt><dt class="mono hu">Nyelv</dt><dd>2</dd></div>
+      <div><dt class="mono en">Full guide</dt><dt class="mono hu">Teljes anyag</dt><dd>2</dd></div>
+    </dl>
+  </header>
+
+  <section class="docs">
+    <span class="mono panel__eyebrow"><span class="en">The long-form answers</span><span class="hu">A részletes válaszok</span></span>
+    <h2><span class="en">Companion guides</span><span class="hu">Kísérő kisokosok</span></h2>
+    <ul class="docs__list">
+      <li>
+        <code>AI-at-Work-Field-Guide-EN.md</code>
+        <span class="en">English — 12 sections, ~100 questions with full explanations: foundations, ML vs GenAI, RAG, agents &amp; MCP, ETL/dbt, MLOps, evaluation, cost, automation tooling, the model landscape, governance.</span>
+        <span class="hu">Angol — 12 szekció, ~100 kérdés részletes magyarázattal: alapok, ML vs GenAI, RAG, ágensek és MCP, ETL/dbt, MLOps, kiértékelés, költség, automatizálási eszközök, modell-tájkép, governance.</span>
+      </li>
+      <li>
+        <code>AI-a-munkahelyen-Kisokos-HU.md</code>
+        <span class="en">Hungarian — the same guide, written rather than translated, with Hungarian-specific notes (token cost, language coverage).</span>
+        <span class="hu">Magyar — ugyanaz az anyag, megírva és nem lefordítva, magyar-specifikus megjegyzésekkel (tokenköltség, nyelvi lefedettség).</span>
+      </li>
+    </ul>
+    <p class="docs__note">
+      <span class="en">Both files live next to this page in the project folder <code>d:\ai_trials\TechAIPMInterviewQuestions\</code> — open them from there, or search the filename in your repo.</span>
+      <span class="hu">Mindkét fájl a projektmappában van ennek az oldalnak a szomszédságában: <code>d:\ai_trials\TechAIPMInterviewQuestions\</code> — onnan nyisd meg, vagy keresd a fájlnevet a repóban.</span>
+    </p>
+  </section>
+
+  <div class="controls">
+    <button class="chip" data-filter="all" aria-pressed="true"><span class="en">All</span><span class="hu">Összes</span></button>
+    <button class="chip" data-filter="core" aria-pressed="false">Core</button>
+    <button class="chip" data-filter="ml" aria-pressed="false">ML</button>
+    <button class="chip" data-filter="rag" aria-pressed="false">RAG</button>
+    <button class="chip" data-filter="tools" aria-pressed="false">Agents</button>
+    <button class="chip" data-filter="data" aria-pressed="false">Data</button>
+    <button class="chip" data-filter="mlops" aria-pressed="false">MLOps</button>
+    <button class="chip" data-filter="eval" aria-pressed="false">Eval</button>
+    <button class="chip" data-filter="cost" aria-pressed="false">Cost</button>
+    <button class="chip" data-filter="auto" aria-pressed="false">Automation</button>
+    <button class="chip" data-filter="models" aria-pressed="false">Models</button>
+    <button class="chip" data-filter="gov" aria-pressed="false">Governance</button>
+    <span class="controls__spacer"></span>
+    <div class="lang" role="group" aria-label="Language">
+      <button type="button" data-lang="en" aria-pressed="true">EN</button>
+      <button type="button" data-lang="hu" aria-pressed="false">HU</button>
+    </div>
+  </div>
+
+  <!-- CORE -->
+  <section class="domain" data-domain="core">
+    <div class="domain__head">
+      <span class="mono domain__code">CORE</span>
+      <h2><span class="en">Foundations</span><span class="hu">Alapok</span></h2>
+      <span class="domain__note en">How the thing actually works.</span>
+      <span class="domain__note hu">Hogyan működik valójában.</span>
+      <span class="mono domain__count">7</span>
+    </div>
+    <div class="cards">
+      <article class="card">
+        <span class="mono card__id">CORE-01</span>
+        <h3 class="card__q"><span class="en">How does an LLM actually work?</span><span class="hu">Hogyan működik valójában egy LLM?</span></h3>
+        <p class="card__a en">A transformer predicting the next token, autoregressively. No lookup, no fact-check, no intent — <b>optimised for fluency, not truth</b>.</p>
+        <p class="card__a hu">Transformer, amely autoregresszíven a következő tokent jósolja. Nincs lekérdezés, tényellenőrzés vagy szándék — <b>folyékonyságra optimalizálva, nem igazságra</b>.</p>
+      </article>
+      <article class="card">
+        <span class="mono card__id">CORE-02</span>
+        <h3 class="card__q"><span class="en">Why do models hallucinate?</span><span class="hu">Miért hallucinálnak a modellek?</span></h3>
+        <p class="card__a en">It's the training objective, not a defect: no calibrated "I don't know". Act on input (grounding), output (citations, abstention) and process (a fixed test set). <b>Make errors rare, visible and cheap — not promised away</b>.</p>
+        <p class="card__a hu">Ez a tanítási célfüggvény, nem hiba: nincs kalibrált „nem tudom". Lépj az inputon (grounding), outputon (hivatkozás, tartózkodás) és a folyamaton (fix tesztkészlet). <b>A hiba legyen ritka, látható és olcsó — ne elígért</b>.</p>
+      </article>
+      <article class="card">
+        <span class="mono card__id">CORE-03</span>
+        <h3 class="card__q"><span class="en">What does temperature control?</span><span class="hu">Mit szabályoz a temperature?</span></h3>
+        <p class="card__a en">How peaked the output distribution is. <b>A consistency dial, not an accuracy dial</b> — at 0 the model repeats the same wrong answer reliably.</p>
+        <p class="card__a hu">Mennyire csúcsos a kimeneti eloszlás. <b>Konzisztencia-, nem pontossági szabályzó</b> — 0-n ugyanazt a rossz választ ismétli megbízhatóan.</p>
+      </article>
+      <article class="card">
+        <span class="mono card__id">CORE-04</span>
+        <h3 class="card__q"><span class="en">Context window — and exceeding it?</span><span class="hu">Context window — és ha túllépjük?</span></h3>
+        <p class="card__a en">One token budget covering prompt, history, retrieval, tools <em>and</em> output. Exceed it and you error or <b>silently lose the oldest instructions</b>. Quality also drops in the middle.</p>
+        <p class="card__a hu">Egyetlen tokenbüdzsé: prompt, előzmény, retrieval, eszközök <em>és</em> kimenet. Túllépve hibát kapsz, vagy <b>csendben elvesznek a legrégebbi utasítások</b>. A közepén a minőség is esik.</p>
+      </article>
+      <article class="card card--myth">
+        <span class="mono card__id">CORE-05 · <span class="en">MISCONCEPTION</span><span class="hu">FÉLREÉRTÉS</span></span>
+        <h3 class="card__q"><span class="en">"The model will learn from how we use it"</span><span class="hu">„Majd tanul abból, ahogy használjuk"</span></h3>
+        <p class="card__a en">It won't. <b>Weights change only during training.</b> Prompting, RAG and long conversations teach it nothing — improvement needs someone to own a data flywheel.</p>
+        <p class="card__a hu">Nem fog. <b>A súlyok csak tanítás közben változnak.</b> A prompt, a RAG és a hosszú beszélgetés nem tanít semmit — a javuláshoz valakinek birtokolnia kell egy adat-lendkereket.</p>
+      </article>
+      <article class="card">
+        <span class="mono card__id">CORE-06</span>
+        <h3 class="card__q"><span class="en">Why do tokens show up on every invoice?</span><span class="hu">Miért van minden számlán token?</span></h3>
+        <p class="card__a en">The token is the unit of price, latency, context and rate limits at once. <b>Your unit economics are a token budget</b> — and Hungarian text costs notably more per word than English.</p>
+        <p class="card__a hu">A token egyszerre az ár, a latencia, a kontextus és a rate limit egysége. <b>A unit economics egy tokenbüdzsé</b> — és a magyar szöveg szavanként érezhetően többe kerül az angolnál.</p>
+      </article>
+      <article class="card">
+        <span class="mono card__id">CORE-07</span>
+        <h3 class="card__q"><span class="en">Why isn't an LLM a database?</span><span class="hu">Miért nem adatbázis az LLM?</span></h3>
+        <p class="card__a en">No exactness, no provenance, no transactional freshness, no row-level permissions. <b>Facts belong in a system of record; the LLM is the interface</b>.</p>
+        <p class="card__a hu">Nincs pontosság, provenance, tranzakciós frissesség, sorszintű jogosultság. <b>A tények nyilvántartó rendszerbe tartoznak; az LLM a felület</b>.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ML -->
+  <section class="domain" data-domain="ml">
+    <div class="domain__head">
+      <span class="mono domain__code">ML</span>
+      <h2><span class="en">ML vs GenAI</span><span class="hu">ML vs GenAI</span></h2>
+      <span class="domain__note en">The classic toolbox, and when to reach for it.</span>
+      <span class="domain__note hu">A klasszikus eszköztár, és mikor nyúlj érte.</span>
+      <span class="mono domain__count">8</span>
+    </div>
+    <div class="cards">
+      <article class="card">
+        <span class="mono card__id">ML-01</span>
+        <h3 class="card__q"><span class="en">ML vs GenAI — what's the difference?</span><span class="hu">ML vs GenAI — mi a különbség?</span></h3>
+        <p class="card__a en">ML maps inputs to decisions with calibrated, auditable output. GenAI produces content. <b>Classic ML for prediction over structured data, generative for unstructured language</b> — good systems use both.</p>
+        <p class="card__a hu">Az ML bemenetet döntésre képez, kalibrált és auditálható kimenettel. A GenAI tartalmat gyárt. <b>Klasszikus ML predikcióra strukturált adaton, generatív a strukturálatlan nyelvre</b> — a jó rendszerek mindkettőt használják.</p>
+      </article>
+      <article class="card">
+        <span class="mono card__id">ML-02</span>
+        <h3 class="card__q"><span class="en">Bias–variance trade-off?</span><span class="hu">Bias–variance trade-off?</span></h3>
+        <p class="card__a en">Bias = too simple (wrong the same way). Variance = too sensitive to the sample. Diagnose by comparing training and validation error. <b>"Great in the notebook, bad in production" is almost always variance</b>.</p>
+        <p class="card__a hu">Bias = túl egyszerű (mindig ugyanúgy téved). Variance = túl érzékeny a mintára. A tanítási és validációs hiba összevetése diagnosztizál. <b>A „notebookban remek, production-ban rossz" szinte mindig variance</b>.</p>
+      </article>
+      <article class="card">
+        <span class="mono card__id">ML-03</span>
+        <h3 class="card__q"><span class="en">Dimensionality reduction — when?</span><span class="hu">Dimenziócsökkentés — mikor?</span></h3>
+        <p class="card__a en">PCA to compress and denoise; UMAP/t-SNE to <em>look</em> at structure only — their distances mean nothing. <b>Reach for it when you diagnosed a problem, not by habit</b>: boosted trees rarely need it.</p>
+        <p class="card__a hu">PCA tömörítésre és zajszűrésre; UMAP/t-SNE csak a szerkezet <em>megnézésére</em> — a távolságaik nem jelentenek semmit. <b>Diagnosztizált problémára nyúlj érte, ne megszokásból</b>: a boostolt fáknak ritkán kell.</p>
+      </article>
+      <article class="card">
+        <span class="mono card__id">ML-04</span>
+        <h3 class="card__q"><span class="en">How do you know a clustering is good?</span><span class="hu">Honnan tudod, hogy jó a klaszterezés?</span></h3>
+        <p class="card__a en">Not from the silhouette score. Test <b>stability</b> (re-run on a resample) and <b>actionability</b> — segments must differ on something you can act on differently. Otherwise it's a chart, not a finding.</p>
+        <p class="card__a hu">Nem a silhouette-pontszámból. Teszteld a <b>stabilitást</b> (futtasd újra újramintázva) és a <b>cselekvőképességet</b> — a szegmenseknek olyanban kell különbözniük, amire másképp tudsz lépni. Különben ábra, nem megállapítás.</p>
+      </article>
+      <article class="card">
+        <span class="mono card__id">ML-05</span>
+        <h3 class="card__q"><span class="en">Deep learning — when is it right?</span><span class="hu">Deep learning — mikor a helyes?</span></h3>
+        <p class="card__a en">Unstructured, high-dimensional input plus lots of data, or a pre-trained model to adapt. <b>Deep learning for perception and language, boosted trees for tables, plain code for anything deterministic</b>.</p>
+        <p class="card__a hu">Strukturálatlan, nagydimenziós bemenet és sok adat, vagy adaptálható előtanított modell. <b>Deep learning érzékelésre és nyelvre, boostolt fák táblákra, kód mindenre, ami determinisztikus</b>.</p>
+      </article>
+      <article class="card">
+        <span class="mono card__id">ML-06</span>
+        <h3 class="card__q"><span class="en">Transfer learning — why does it matter?</span><span class="hu">Transfer learning — miért fontos?</span></h3>
+        <p class="card__a en">Start from a model that already knows, and specialise: feature extraction → fine-tuning → LoRA → in-context examples. <b>It's the reason a project needs hundreds of labels instead of a million</b>.</p>
+        <p class="card__a hu">Indulj olyan modellből, amely már tud, és specializálj: feature-kinyerés → finomhangolás → LoRA → példák a promptban. <b>Ezért kell egy projekthez több száz címke egymillió helyett</b>.</p>
+      </article>
+      <article class="card">
+        <span class="mono card__id">ML-07</span>
+        <h3 class="card__q"><span class="en">Multi-armed bandits vs A/B test?</span><span class="hu">Multi-armed bandit vs A/B teszt?</span></h3>
+        <p class="card__a en">A bandit shifts traffic toward the winner while still exploring, so it costs less regret and adapts. <b>A/B when you need a clean causal number that will be scrutinised</b>; bandit for many variants, drift or personalisation.</p>
+        <p class="card__a hu">A bandit a győztes felé tolja a forgalmat, miközben felderít, tehát kevesebbe kerül és alkalmazkodik. <b>A/B, ha tiszta kauzális szám kell, amit meg fognak vizsgálni</b>; bandit sok változatra, driftre vagy személyre szabásra.</p>
+      </article>
+      <article class="card">
+        <span class="mono card__id">ML-08</span>
+        <h3 class="card__q"><span class="en">Embeddings — good at what, bad at what?</span><span class="hu">Embeddingek — miben jók, miben nem?</span></h3>
+        <p class="card__a en">Meaning as geometry: great for semantic search, clustering, dedup. They capture similarity, not truth or recency, and <b>are weak on exact IDs — which is why hybrid search wins</b>. Changing model = re-embed everything.</p>
+        <p class="card__a hu">Jelentés geometriaként: kiváló szemantikus keresésre, klaszterezésre, deduplikációra. Hasonlóságot ragadnak meg, nem igazságot vagy frissességet, és <b>gyengék a pontos azonosítókon — ezért győz a hibrid keresés</b>. Modellváltás = teljes újra-embeddelés.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- RAG -->
+  <section class="domain" data-domain="rag">
+    <div class="domain__head">
+      <span class="mono domain__code">RAG</span>
+      <h2><span class="en">RAG &amp; context</span><span class="hu">RAG és kontextus</span></h2>
+      <span class="domain__note en">Grounding answers in real sources.</span>
+      <span class="domain__note hu">A válaszok valódi forráshoz kötése.</span>
+      <span class="mono domain__count">7</span>
+    </div>
+    <div class="cards">
+      <article class="card">
+        <span class="mono card__id">RAG-01</span>
+        <h3 class="card__q"><span class="en">What is RAG, really?</span><span class="hu">Mi a RAG valójában?</span></h3>
+        <p class="card__a en">Retrieve relevant passages first, then answer from them with citations. <b>RAG is a search problem with a generation step attached</b> — most quality is in chunking, retrieval and re-ranking, not the model.</p>
+        <p class="card__a hu">Először kérj le releváns részleteket, aztán azokból válaszolj hivatkozással. <b>A RAG keresési probléma, amire generálás van csatolva</b> — a minőség nagy része a chunkolásban, retrievalben és rerankban van, nem a modellben.</p>
+      </article>
+      <article class="card">
+        <span class="mono card__id">RAG-02</span>
+        <h3 class="card__q"><span class="en">RAG, fine-tuning or prompting?</span><span class="hu">RAG, finomhangolás vagy prompt?</span></h3>
+        <p class="card__a en"><b>Knowledge → RAG. Behaviour → fine-tuning. Everything → try prompting first.</b> The most expensive mistake in this space is fine-tuning to teach facts.</p>
+        <p class="card__a hu"><b>Tudás → RAG. Viselkedés → finomhangolás. Minden → először prompt.</b> A legdrágább hiba ezen a területen az, ha tényeket próbálsz finomhangolással tanítani.</p>
+      </article>
+      <article class="card">
+        <span class="mono card__id">RAG-03</span>
+        <h3 class="card__q"><span class="en">Why does chunking decide quality?</span><span class="hu">Miért a chunkolás dönt a minőségről?</span></h3>
+        <p class="card__a en">The chunk is simultaneously the unit of embedding, retrieval <em>and</em> injection. <b>Chunk on structure, not character count</b>, and tune k by measuring recall on real queries.</p>
+        <p class="card__a hu">A chunk egyszerre az embedding, a retrieval <em>és</em> az injektálás egysége. <b>Struktúra szerint chunkolj, ne karakterszám szerint</b>, és a k-t valós kérdéseken mért recall alapján hangold.</p>
+      </article>
+      <article class="card">
+        <span class="mono card__id">RAG-04</span>
+        <h3 class="card__q"><span class="en">The two failure modes of RAG?</span><span class="hu">A RAG két hibamódja?</span></h3>
+        <p class="card__a en"><b>Retrieval failure</b> (the evidence never arrived) and <b>generation failure</b> (it arrived and was ignored). Different metrics, different layers — establish which one you have before changing anything.</p>
+        <p class="card__a hu"><b>Retrieval-hiba</b> (a bizonyíték nem ért oda) és <b>generálási hiba</b> (odaért, és figyelmen kívül hagyta). Más metrika, más réteg — állapítsd meg, melyik, mielőtt bármit változtatnál.</p>
+      </article>
+      <article class="card">
+        <span class="mono card__id">RAG-05</span>
+        <h3 class="card__q"><span class="en">How do you handle live data?</span><span class="hu">Hogyan kezeled az élő adatot?</span></h3>
+        <p class="card__a en">Changing documents → event-driven reindex with validity timestamps. Live state (price, stock, balance) → <b>don't put it in RAG; call the system of record via a tool</b>.</p>
+        <p class="card__a hu">Változó dokumentum → eseményvezérelt újraindexelés érvényességi időbélyeggel. Élő állapot (ár, készlet, egyenleg) → <b>ne RAG-be; hívd a nyilvántartó rendszert eszközzel</b>.</p>
+      </article>
+      <article class="card">
+        <span class="mono card__id">RAG-06</span>
+        <h3 class="card__q"><span class="en">Context engineering vs prompt engineering?</span><span class="hu">Context vs prompt engineering?</span></h3>
+        <p class="card__a en">Prompting crafts the instruction. Context engineering is <b>the runtime policy deciding what the model can see</b> on every call, under a hard token budget. Put the key material first and last — attention is weakest in the middle.</p>
+        <p class="card__a hu">A promptolás az utasítást alkotja. A context engineering <b>a futásidejű policy arról, mit láthat a modell</b> minden híváson, kemény tokenbüdzsé alatt. A lényeget az elejére és a végére — a figyelem középen a leggyengébb.</p>
+      </article>
+      <article class="card">
+        <span class="mono card__id">RAG-07</span>
+        <h3 class="card__q"><span class="en">When is RAG overkill?</span><span class="hu">Mikor túlzás a RAG?</span></h3>
+        <p class="card__a en">When the corpus fits in context, when the answer is a deterministic lookup, or while you're still validating demand. <b>It buys you a second failure mode and a pipeline to operate</b>.</p>
+        <p class="card__a hu">Ha a korpusz elfér a kontextusban, ha a válasz determinisztikus lekérdezés, vagy amíg a keresletet validálod. <b>Egy második hibamódot és egy üzemeltetendő pipeline-t vásárolsz vele</b>.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- TOOLS -->
+  <section class="domain" data-domain="tools">
+    <div class="domain__head">
+      <span class="mono domain__code">AGENTS</span>
+      <h2><span class="en">Tools, agents &amp; MCP</span><span class="hu">Eszközök, ágensek, MCP</span></h2>
+      <span class="domain__note en">Where AI touches the real world.</span>
+      <span class="domain__note hu">Ahol az AI hozzáér a valós világhoz.</span>
+      <span class="mono domain__count">6</span>
+    </div>
+    <div class="cards">
+      <article class="card">
+        <span class="mono card__id">AGENTS-01</span>
+        <h3 class="card__q"><span class="en">Does the model execute the tool call?</span><span class="hu">A modell hajtja végre az eszközhívást?</span></h3>
+        <p class="card__a en">No — it emits an intent; <b>your code validates, authorises and executes</b>. So "the AI issued a wrong refund" is a missing check in the execution layer, never a model failure.</p>
+        <p class="card__a hu">Nem — szándékot ad ki; <b>a te kódod validál, engedélyez és végrehajt</b>. Tehát „az AI hibás visszatérítést adott" hiányzó ellenőrzés a végrehajtási rétegben, nem modellhiba.</p>
+      </article>
+      <article class="card">
+        <span class="mono card__id">AGENTS-02</span>
+        <h3 class="card__q"><span class="en">Why is a vague tool description a bug?</span><span class="hu">Miért bug a pontatlan eszközleírás?</span></h3>
+        <p class="card__a en">It's runtime input, not a comment — the model selects tools by matching it. <b>Treat descriptions as versioned product copy written for a machine</b>, with their own test cases.</p>
+        <p class="card__a hu">Futásidejű bemenet, nem komment — a modell ez alapján választ eszközt. <b>Kezeld verziózott, gépnek írt terméktextként</b>, saját teszt-esetekkel.</p>
+      </article>
+      <article class="card">
+        <span class="mono card__id">AGENTS-03</span>
+        <h3 class="card__q"><span class="en">Agent, workflow or chatbot?</span><span class="hu">Ágens, workflow vagy chatbot?</span></h3>
+        <p class="card__a en">An agent has a loop whose exit the model controls. Errors compound (0.95⁵ ≈ 0.77) and cost is unbounded, so ask: <b>what's the least agency that solves this?</b> Usually: a workflow with one agentic step.</p>
+        <p class="card__a hu">Az ágensnél a ciklus kilépését a modell kontrollálja. A hiba halmozódik (0,95⁵ ≈ 0,77) és a költség korlátlan, tehát: <b>mi a legkisebb ágensi szabadság, ami megoldja?</b> Általában: workflow egy ágensi lépéssel.</p>
+      </article>
+      <article class="card">
+        <span class="mono card__id">AGENTS-04</span>
+        <h3 class="card__q"><span class="en">Prompt vs tool vs skill?</span><span class="hu">Prompt vs eszköz vs skill?</span></h3>
+        <p class="card__a en">Prompt = how it behaves. Tool = what it can do (and the trust boundary). Skill = <b>how we do this task here</b> — a packaged procedure, loaded when relevant, versionable in git.</p>
+        <p class="card__a hu">Prompt = hogyan viselkedik. Eszköz = mit tud tenni (és a bizalmi határ). Skill = <b>ahogy nálunk ezt végezzük</b> — becsomagolt eljárás, relevancia esetén betöltve, gitben verziózva.</p>
+      </article>
+      <article class="card">
+        <span class="mono card__id">AGENTS-05</span>
+        <h3 class="card__q"><span class="en">What is MCP and why does it exist?</span><span class="hu">Mi az MCP és miért létezik?</span></h3>
+        <p class="card__a en">An open protocol turning N×M bespoke integrations into N+M — <b>USB-C for AI tools</b>. One server per system, one client per app, and one consistent surface for permissions and audit.</p>
+        <p class="card__a hu">Nyílt protokoll, amely N×M egyedi integrációt N+M-re csökkent — <b>az AI-eszközök USB-C-je</b>. Rendszerenként egy szerver, apponként egy kliens, és egyetlen konzisztens felület a jogosultságokra és auditra.</p>
+      </article>
+      <article class="card">
+        <span class="mono card__id">AGENTS-06</span>
+        <h3 class="card__q"><span class="en">How do you give an agent memory?</span><span class="hu">Hogyan adsz memóriát egy ágensnek?</span></h3>
+        <p class="card__a en">Working, session, semantic, episodic, procedural. The hard part is policy — what to write, when to recall, how to resolve contradictions, and how users inspect and delete it. <b>Bad memory is worse than none</b>.</p>
+        <p class="card__a hu">Munka-, munkamenet-, szemantikus, episzodikus, procedurális. A nehéz rész a policy: mit írj, mikor idézd fel, hogyan oldd az ellentmondást, és hogyan nézi meg és törli a felhasználó. <b>A rossz memória rosszabb, mint a semmilyen</b>.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- DATA -->
+  <section class="domain" data-domain="data">
+    <div class="domain__head">
+      <span class="mono domain__code">DATA</span>
+      <h2><span class="en">Data &amp; pipelines</span><span class="hu">Adat és pipeline-ok</span></h2>
+      <span class="domain__note en">ETL, ELT, dbt — what your AI feature sits on.</span>
+      <span class="domain__note hu">ETL, ELT, dbt — amin az AI feature-öd áll.</span>
+      <span class="mono domain__count">6</span>
+    </div>
+    <div class="cards">
+      <article class="card">
+        <span class="mono card__id">DATA-01</span>
+        <h3 class="card__q"><span class="en">ETL vs ELT — why did it switch?</span><span class="hu">ETL vs ELT — miért váltott?</span></h3>
+        <p class="card__a en">Cloud warehouses made storage cheap and separated it from compute, so you load raw and transform in SQL. <b>Raw data preserved means you can re-derive everything when requirements change</b>.</p>
+        <p class="card__a hu">A cloud warehouse olcsóvá tette a tárolást és leválasztotta a compute-ról, tehát nyersen töltesz és SQL-ben transzformálsz. <b>A megőrzött nyers adat azt jelenti, hogy bármit újra levezethetsz, ha a követelmény változik</b>.</p>
+      </article>
+      <article class="card">
+        <span class="mono card__id">DATA-02</span>
+        <h3 class="card__q"><span class="en">What does dbt actually solve?</span><span class="hu">Mit old meg valójában a dbt?</span></h3>
+        <p class="card__a en">Not "running SQL" — anything does that. It gave analytics code <b>version control, tests, dependency management, docs and lineage</b>, so people can safely change it. <code>ref()</code> builds the DAG for you.</p>
+        <p class="card__a hu">Nem az „SQL futtatását" — azt bármi tudja. Az analitikai kódnak adott <b>verziókezelést, teszteket, függőségkezelést, dokumentációt és lineage-t</b>, hogy biztonságosan módosítható legyen. A <code>ref()</code> építi a DAG-ot.</p>
+      </article>
+      <article class="card">
+        <span class="mono card__id">DATA-03</span>
+        <h3 class="card__q"><span class="en">What is a feature store for?</span><span class="hu">Mire jó a feature store?</span></h3>
+        <p class="card__a en">Mainly to kill <b>training/serving skew</b> — the same feature implemented twice, slightly differently. Plus point-in-time correctness. You don't need one for your first model.</p>
+        <p class="card__a hu">Elsősorban a <b>training/serving skew</b> kiiktatására — ugyanaz a feature kétszer, kicsit másképp implementálva. Plusz point-in-time helyesség. Az első modellhez nem kell.</p>
+      </article>
+      <article class="card">
+        <span class="mono card__id">DATA-04</span>
+        <h3 class="card__q"><span class="en">Batch or streaming?</span><span class="hu">Batch vagy streaming?</span></h3>
+        <p class="card__a en">Decide from how fast a decision must reflect an event. <b>Start batch; move only the paths that genuinely need seconds.</b> Many "real-time" requirements are satisfied by a 15-minute micro-batch.</p>
+        <p class="card__a hu">Abból dönts, milyen gyorsan kell egy döntésnek tükröznie egy eseményt. <b>Indulj batch-csel; csak azt vidd streamingbe, aminek valóban másodperc kell.</b> Sok „valós idejű" igényt kielégít egy 15 perces micro-batch.</p>
+      </article>
+      <article class="card card--myth">
+        <span class="mono card__id">DATA-05 · <span class="en">MISCONCEPTION</span><span class="hu">FÉLREÉRTÉS</span></span>
+        <h3 class="card__q"><span class="en">"The model broke"</span><span class="hu">„Elromlott a modell"</span></h3>
+        <p class="card__a en">Usually it didn't. <b>The overwhelming majority of "model" incidents are data incidents</b> — a column that started arriving null raises no exception, it just quietly degrades predictions.</p>
+        <p class="card__a hu">Általában nem romlott el. <b>A „modell"-incidensek túlnyomó többsége adatincidens</b> — egy oszlop, amely nullként kezd érkezni, nem dob kivételt, csak csendben rontja a predikciókat.</p>
+      </article>
+      <article class="card">
+        <span class="mono card__id">DATA-06</span>
+        <h3 class="card__q"><span class="en">Pipeline that feeds a retrieval index?</span><span class="hu">Retrieval-indexet tápláló pipeline?</span></h3>
+        <p class="card__a en">Ingest → parse → metadata (incl. <b>access control</b>) → chunk with stable IDs → embed changed chunks → upsert and propagate deletes → validate recall after every rebuild. And keep a full-rebuild path.</p>
+        <p class="card__a hu">Beolvasás → parszolás → metaadat (<b>jogosultsággal</b>) → chunkolás stabil ID-kkal → csak a változott chunkok embeddelése → upsert és törlések átvezetése → recall-validáció minden újraépítés után. És legyen teljes újraépítési út.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- MLOPS -->
+  <section class="domain" data-domain="mlops">
+    <div class="domain__head">
+      <span class="mono domain__code">MLOPS</span>
+      <h2><span class="en">MLOps &amp; LLMOps</span><span class="hu">MLOps és LLMOps</span></h2>
+      <span class="domain__note en">Keeping it alive after launch.</span>
+      <span class="domain__note hu">Életben tartás indulás után.</span>
+      <span class="mono domain__count">6</span>
+    </div>
+    <div class="cards">
+      <article class="card">
+        <span class="mono card__id">MLOPS-01</span>
+        <h3 class="card__q"><span class="en">How is MLOps different from DevOps?</span><span class="hu">Miben más az MLOps a DevOps-nál?</span></h3>
+        <p class="card__a en">Three things change instead of one — code, data, model — quality is a threshold not a green tick, and <b>ML systems degrade without anyone changing them</b> because the world moves.</p>
+        <p class="card__a hu">Három dolog változik egy helyett — kód, adat, modell —, a minőség küszöb és nem zöld pipa, és <b>az ML-rendszerek anélkül romlanak, hogy bárki hozzájuk érne</b>, mert a világ mozog.</p>
+      </article>
+      <article class="card">
+        <span class="mono card__id">MLOPS-02</span>
+        <h3 class="card__q"><span class="en">What does LLMOps add?</span><span class="hu">Mit tesz hozzá az LLMOps?</span></h3>
+        <p class="card__a en"><b>Prompts as versioned artefacts</b>, evaluation instead of accuracy, a vendor as your dependency, per-request cost observability, context assembly as a tested component, and guardrails in the runtime path.</p>
+        <p class="card__a hu"><b>Promptok verziózott artefaktumként</b>, kiértékelés a pontosság helyett, szállító mint függőség, kérésenkénti költség-observability, kontextus-összeállítás tesztelt komponensként, és guardrailek a futásidejű útvonalon.</p>
+      </article>
+      <article class="card">
+        <span class="mono card__id">MLOPS-03</span>
+        <h3 class="card__q"><span class="en">What do you version?</span><span class="hu">Mit verziózol?</span></h3>
+        <p class="card__a en">Code, data snapshot, model (pinned version — <b>never a floating <code>-latest</code> alias in production</b>), prompts, retrieval config, and the eval set itself. Test: could you reproduce a request from three weeks ago?</p>
+        <p class="card__a hu">Kód, adat-snapshot, modell (pinnelt verzió — <b>soha lebegő <code>-latest</code> alias production-ban</b>), promptok, retrieval-konfiguráció, és maga a kiértékelő készlet. Teszt: reprodukálnál egy három hete logolt kérést?</p>
+      </article>
+      <article class="card">
+        <span class="mono card__id">MLOPS-04</span>
+        <h3 class="card__q"><span class="en">What is drift, and how do you see it?</span><span class="hu">Mi a drift, és hogyan látod?</span></h3>
+        <p class="card__a en">Data drift (inputs change), concept drift (the right answer changes), prediction drift (your outputs shift — often the first visible symptom, and it needs no labels).</p>
+        <p class="card__a hu">Adat-drift (a bemenet változik), koncepció-drift (a helyes válasz változik), predikció-drift (a kimenet elmozdul — gyakran ez az első látható tünet, és nem kell hozzá címke).</p>
+      </article>
+      <article class="card">
+        <span class="mono card__id">MLOPS-05</span>
+        <h3 class="card__q"><span class="en">What must monitoring cover?</span><span class="hu">Mit kell fednie a monitorozásnak?</span></h3>
+        <p class="card__a en">Infra, cost, <b>quality proxies</b> and business outcome — plus full traces. <b>A wrong answer throws no exception</b>, so instrument for it deliberately: judge scores, validation failures, edits, retries, escalations.</p>
+        <p class="card__a hu">Infra, költség, <b>minőségi proxyk</b> és üzleti kimenet — plusz teljes trace-ek. <b>A rossz válasz nem dob kivételt</b>, tehát szándékosan instrumentálj rá: bíra-pontszámok, validációs bukások, szerkesztések, retryk, eszkalációk.</p>
+      </article>
+      <article class="card">
+        <span class="mono card__id">MLOPS-06</span>
+        <h3 class="card__q"><span class="en">How do you ship a model or prompt change?</span><span class="hu">Hogyan szállítasz modell- vagy prompt-változást?</span></h3>
+        <p class="card__a en">Golden set side by side per slice → shadow → 5% canary → ramp, flag retained. And remember: <b>prompts are model-specific — same prompt plus new model is a different system</b>.</p>
+        <p class="card__a hu">Golden set egymás mellett szeletenként → shadow → 5% canary → rámpa, flag megtartva. És: <b>a promptok modellspecifikusak — ugyanaz a prompt új modellen más rendszer</b>.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- EVAL -->
+  <section class="domain" data-domain="eval">
+    <div class="domain__head">
+      <span class="mono domain__code">EVAL</span>
+      <h2><span class="en">Evaluation</span><span class="hu">Kiértékelés</span></h2>
+      <span class="domain__note en">How you know it's any good.</span>
+      <span class="domain__note hu">Ahonnan tudod, hogy jó-e.</span>
+      <span class="mono domain__count">6</span>
+    </div>
+    <div class="cards">
+      <article class="card">
+        <span class="mono card__id">EVAL-01</span>
+        <h3 class="card__q"><span class="en">How do you evaluate before launch?</span><span class="hu">Hogyan értékelsz ki indulás előtt?</span></h3>
+        <p class="card__a en">Golden set → automatic metrics → human review → adversarial pass. <b>Set the launch bar before you look at the results</b>, keep it in CI, and keep a rollback path.</p>
+        <p class="card__a hu">Golden set → automatikus metrikák → emberi review → adverzariális kör. <b>Az indulási küszöb az eredmények megtekintése előtt dőljön el</b>, tartsd CI-ban, és legyen visszaállási út.</p>
+      </article>
+      <article class="card">
+        <span class="mono card__id">EVAL-02</span>
+        <h3 class="card__q"><span class="en">LLM-as-judge — when can you trust it?</span><span class="hu">LLM-as-judge — mikor bízhatsz benne?</span></h3>
+        <p class="card__a en">When the criterion is checkable, agreement with humans is measured, comparisons are pairwise, and the judge is a different strong model. <b>A smoke alarm, not a courtroom</b>.</p>
+        <p class="card__a hu">Ha a kritérium ellenőrizhető, az emberi egyezés mért, az összevetés páros, és a bíró más, erős modell. <b>Füstjelző, nem bírósági tárgyalás</b>.</p>
+      </article>
+      <article class="card">
+        <span class="mono card__id">EVAL-03</span>
+        <h3 class="card__q"><span class="en">Precision, recall, F1 — plainly?</span><span class="hu">Precizitás, recall, F1 — közérthetően?</span></h3>
+        <p class="card__a en">Of what we flagged, how many were real (precision); of the real ones, how many we caught (recall). <b>Tell me which error costs more and I'll set the threshold</b> — that's a business decision.</p>
+        <p class="card__a hu">Amit megjelöltünk, mennyi volt valós (precizitás); a valósakból mennyit fogtunk el (recall). <b>Mondd meg, melyik hiba drágább, és beállítom a küszöböt</b> — ez üzleti döntés.</p>
+      </article>
+      <article class="card">
+        <span class="mono card__id">EVAL-04</span>
+        <h3 class="card__q"><span class="en">Evaluating something non-deterministic?</span><span class="hu">Nemdeterminisztikus kiértékelése?</span></h3>
+        <p class="card__a en">Assert on properties, run n samples, report <b>variance as a metric</b>, and aggregate enough cases that the confidence interval is smaller than your claim. Declaring a 2% win on 50 examples is the classic error.</p>
+        <p class="card__a hu">Tulajdonságra állíts, futtass n mintát, jelentsd a <b>szórást metrikaként</b>, és aggregálj annyi esetre, hogy a konfidenciaintervallum kisebb legyen az állításodnál. A klasszikus hiba: 2%-os nyereség 50 példán.</p>
+      </article>
+      <article class="card">
+        <span class="mono card__id">EVAL-05</span>
+        <h3 class="card__q"><span class="en">Evals pass but users are unhappy</span><span class="hu">Az evalok átmennek, a userek nem elégedettek</span></h3>
+        <p class="card__a en">Read 50 real transcripts before touching anything. Usual cause: <b>the eval set doesn't match traffic, or you measured the wrong metric</b> (they care about latency, tone, effort saved).</p>
+        <p class="card__a hu">Olvass el 50 valódi beszélgetést, mielőtt bármihez érnél. Szokásos ok: <b>az eval-készlet nem illik a forgalomra, vagy rossz metrikát mértél</b> (a latencia, a hangnem, a megtakarított munka érdekli őket).</p>
+      </article>
+      <article class="card">
+        <span class="mono card__id">EVAL-06</span>
+        <h3 class="card__q"><span class="en">Faithfulness vs retrieval quality?</span><span class="hu">Faithfulness vs retrieval-minőség?</span></h3>
+        <p class="card__a en">Measure faithfulness against a fixed, known-good context so retrieval can't contaminate it. And note: <b>faithful ≠ correct</b> — an answer can be perfectly grounded in a stale document.</p>
+        <p class="card__a hu">A faithfulnesst fix, ismerten jó kontextussal mérd, hogy a retrieval ne szennyezze. És: <b>a hű ≠ helyes</b> — a válasz lehet tökéletesen groundolt egy elavult dokumentumban.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- COST -->
+  <section class="domain" data-domain="cost">
+    <div class="domain__head">
+      <span class="mono domain__code">COST</span>
+      <h2><span class="en">Routing &amp; cost</span><span class="hu">Routing és költség</span></h2>
+      <span class="domain__note en">What makes an AI feature affordable.</span>
+      <span class="domain__note hu">Amitől megfizethető egy AI feature.</span>
+      <span class="mono domain__count">5</span>
+    </div>
+    <div class="cards">
+      <article class="card">
+        <span class="mono card__id">COST-01</span>
+        <h3 class="card__q"><span class="en">What is model routing worth?</span><span class="hu">Mennyit ér a model routing?</span></h3>
+        <p class="card__a en">70–90% of real traffic is easy. Sending it to a cheap model typically cuts cost several-fold <em>and</em> improves median latency — <b>often the difference between viable and unviable unit economics</b>.</p>
+        <p class="card__a hu">A valós forgalom 70–90%-a könnyű. Olcsó modellre küldve ez több-szörösére csökkenti a költséget <em>és</em> javítja a mediánlatenciát — <b>gyakran ez a különbség életképes és életképtelen unit economics között</b>.</p>
+      </article>
+      <article class="card">
+        <span class="mono card__id">COST-02</span>
+        <h3 class="card__q"><span class="en">What must the router be?</span><span class="hu">Milyen legyen a router?</span></h3>
+        <p class="card__a en">Milliseconds, negligible cost, and <b>deliberately asymmetric — bias toward escalation</b>, because a hard query on a small model costs more than wasted money. Monitor quality <em>per route</em>.</p>
+        <p class="card__a hu">Milliszekundum, elhanyagolható költség, és <b>szándékosan aszimmetrikus — az eszkalálás felé húzva</b>, mert a nehéz kérdés kis modellen drágább az elpazarolt pénznél. A minőséget <em>útvonalonként</em> monitorozd.</p>
+      </article>
+      <article class="card">
+        <span class="mono card__id">COST-03</span>
+        <h3 class="card__q"><span class="en">How do you estimate the bill?</span><span class="hu">Hogyan becsülöd meg a számlát?</span></h3>
+        <p class="card__a en">MAU × calls × tokens × price, then adjust for retries, caching and routing — and <b>sanity-check against revenue per user</b>. Track cost per <em>successful</em> task, not per call.</p>
+        <p class="card__a hu">MAU × hívás × token × ár, majd korrekció retryre, cache-re, routingra — és <b>józansági ellenőrzés a felhasználónkénti árbevétel ellen</b>. Költséget <em>sikeres</em> feladatonként kövess, ne hívásonként.</p>
+      </article>
+      <article class="card">
+        <span class="mono card__id">COST-04</span>
+        <h3 class="card__q"><span class="en">Biggest levers on cost and latency?</span><span class="hu">Legnagyobb fogantyúk költségre, latenciára?</span></h3>
+        <p class="card__a en">Prompt caching (keep the prefix byte-identical), routing, semantic caching, token discipline, batch APIs, streaming for perceived latency — and <b>moving work off the critical path entirely</b>.</p>
+        <p class="card__a hu">Prompt caching (a prefix bitre azonos legyen), routing, szemantikus cache, token-fegyelem, batch API-k, streaming a percepcionált latenciára — és <b>a munka teljes levétele a kritikus útvonalról</b>.</p>
+      </article>
+      <article class="card">
+        <span class="mono card__id">COST-05</span>
+        <h3 class="card__q"><span class="en">Models improve monthly. What lasts?</span><span class="hu">A modellek javulnak. Mi marad?</span></h3>
+        <p class="card__a en">The workflow, the data flywheel, the <b>evaluation harness</b> and the domain knowledge. <b>Abstract the model, invest around it</b> — then an upgrade is a dividend, not a rewrite.</p>
+        <p class="card__a hu">A munkafolyamat, az adat-lendkerék, a <b>kiértékelő harness</b> és a doménszaktudás. <b>Absztraháld a modellt, körülötte fektess be</b> — így a frissítés osztalék, nem újraírás.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- AUTO -->
+  <section class="domain" data-domain="auto">
+    <div class="domain__head">
+      <span class="mono domain__code">AUTO</span>
+      <h2><span class="en">Automation tooling</span><span class="hu">Automatizálási eszközök</span></h2>
+      <span class="domain__note en">n8n, Make, Zapier, Power Automate, Flowise, Airflow…</span>
+      <span class="domain__note hu">n8n, Make, Zapier, Power Automate, Flowise, Airflow…</span>
+      <span class="mono domain__count">5</span>
+    </div>
+    <div class="cards">
+      <article class="card">
+        <span class="mono card__id">AUTO-01</span>
+        <h3 class="card__q"><span class="en">What is n8n for?</span><span class="hu">Mire jó az n8n?</span></h3>
+        <p class="card__a en">Visual workflow automation that is <b>self-hostable with a code escape hatch</b>, priced per execution. Nodes for model providers, vector stores and agents make LLM automations buildable in an afternoon.</p>
+        <p class="card__a hu">Vizuális workflow-automatizálás, amely <b>self-hostolható, kód-kijárattal</b>, futtatás-alapú árazással. A modellszolgáltatói, vektortároló- és ágens-csomópontok miatt egy LLM-automatizálás egy délután összerakható.</p>
+      </article>
+      <article class="card">
+        <span class="mono card__id">AUTO-02</span>
+        <h3 class="card__q"><span class="en">n8n vs Zapier vs Make vs Power Automate?</span><span class="hu">n8n vs Zapier vs Make vs Power Automate?</span></h3>
+        <p class="card__a en">Zapier: biggest catalogue, easiest, shallow logic. Make: more capable branching, cheaper, steeper. n8n: self-hosted, developer-friendly. Power Automate: <b>the default if you live in Microsoft 365</b>, awkward outside it.</p>
+        <p class="card__a hu">Zapier: legnagyobb katalógus, legegyszerűbb, sekély logika. Make: képesebb elágazás, olcsóbb, meredekebb. n8n: self-hostolt, fejlesztőbarát. Power Automate: <b>az alapértelmezés, ha Microsoft 365-ben élsz</b>, azon kívül kényelmetlen.</p>
+      </article>
+      <article class="card">
+        <span class="mono card__id">AUTO-03</span>
+        <h3 class="card__q"><span class="en">How do you choose a platform?</span><span class="hu">Hogyan választasz platformot?</span></h3>
+        <p class="card__a en">Who maintains it, where the data must live, how critical it is, how complex the logic is. <b>Prototype in a visual tool, then rewrite the two flows that became business-critical as tested code</b>.</p>
+        <p class="card__a hu">Ki tartja karban, hol kell lennie az adatnak, mennyire kritikus, mennyire összetett a logika. <b>Prototípus vizuális eszközben, aztán írd újra tesztelt kódként azt a két folyamatot, amely kritikussá vált</b>.</p>
+      </article>
+      <article class="card">
+        <span class="mono card__id">AUTO-04</span>
+        <h3 class="card__q"><span class="en">What should you automate first?</span><span class="hu">Mit automatizálj először?</span></h3>
+        <p class="card__a en">Frequent, judgement-light, tolerant-failure tasks with a clear trigger: triage, drafting, extraction, enrichment, monitoring. <b>Automating a broken process just makes it fail faster</b>.</p>
+        <p class="card__a hu">Gyakori, ítélet-könnyű, toleráns hibamódú feladatokat világos triggerrel: triázs, vázlatolás, kinyerés, dúsítás, monitorozás. <b>Egy elromlott folyamat automatizálása csak gyorsabban buktatja el</b>.</p>
+      </article>
+      <article class="card">
+        <span class="mono card__id">AUTO-05</span>
+        <h3 class="card__q"><span class="en">How do you make an automation reliable?</span><span class="hu">Hogyan lesz megbízható egy automatizálás?</span></h3>
+        <p class="card__a en"><b>Idempotency keys on every write</b>, capped retries with backoff, an explicit failure path, validation between steps, loop and cost limits, and a named owner with a review date.</p>
+        <p class="card__a hu"><b>Idempotencia-kulcs minden íráson</b>, plafonozott retry backoffal, explicit hibaút, validáció a lépések között, ciklus- és költséglimit, és megnevezett felelős review-dátummal.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- MODELS -->
+  <section class="domain" data-domain="models">
+    <div class="domain__head">
+      <span class="mono domain__code">MODELS</span>
+      <h2><span class="en">Models, CLIs &amp; IDEs</span><span class="hu">Modellek, CLI-k, IDE-k</span></h2>
+      <span class="domain__note en">Mid-2026 snapshot — verify before you commit.</span>
+      <span class="domain__note hu">2026 közepi pillanatkép — ellenőrizd, mielőtt elköteleződsz.</span>
+      <span class="mono domain__count">6</span>
+    </div>
+    <div class="cards">
+      <article class="card">
+        <span class="mono card__id">MODELS-01</span>
+        <h3 class="card__q"><span class="en">Claude, ChatGPT, Gemini, Grok, Llama, Mistral</span><span class="hu">Claude, ChatGPT, Gemini, Grok, Llama, Mistral</span></h3>
+        <p class="card__a en">Claude for coding and long-horizon agentic work; OpenAI for reach and ecosystem; Gemini for Google Cloud/Workspace depth; Grok for real-time; Llama and Mistral for open weights and EU residency. <b>Tiers within a family differ more than the families differ</b>.</p>
+        <p class="card__a hu">Claude kódolásra és hosszú horizontú ágensi munkára; OpenAI elérésre és ökoszisztémára; Gemini Google Cloud/Workspace mélységre; Grok valós időre; Llama és Mistral nyílt súlyokra és EU-adatlakhelyre. <b>Egy családon belül a szintek többet különböznek, mint a családok egymástól</b>.</p>
+      </article>
+      <article class="card">
+        <span class="mono card__id">MODELS-02</span>
+        <h3 class="card__q"><span class="en">DeepSeek, Qwen, Kimi, GLM, MiniMax, MiMo</span><span class="hu">DeepSeek, Qwen, Kimi, GLM, MiniMax, MiMo</span></h3>
+        <p class="card__a en">DeepSeek = cheap capable generalist; Qwen = most adaptable base, broadest multilingual; Kimi = long-context agentic; GLM = coding and tool use; MiniMax = efficient million-token context; MiMo = small and efficient. <b>Open weights ≠ open training data — check licences and, for hosted APIs, data governance</b>.</p>
+        <p class="card__a hu">DeepSeek = olcsó, képes generalista; Qwen = legadaptálhatóbb bázis, legszélesebb többnyelvűség; Kimi = hosszú kontextusú ágensi; GLM = kódolás és eszközhasználat; MiniMax = hatékony milliós kontextus; MiMo = kicsi és hatékony. <b>A nyílt súly ≠ nyílt tanítóadat — a licenceket, hosztolt API-nál az adat-governance-t ellenőrizd</b>.</p>
+      </article>
+      <article class="card">
+        <span class="mono card__id">MODELS-03</span>
+        <h3 class="card__q"><span class="en">Ollama — when to run locally?</span><span class="hu">Ollama — mikor futtass lokálisan?</span></h3>
+        <p class="card__a en">When data can't leave, you need offline, or volume is high and complexity low. Not for frontier capability, and not if you'd operate GPUs you don't otherwise need. <b>A hybrid — local for bulk, hosted for the hard tail — usually wins</b>.</p>
+        <p class="card__a hu">Ha az adat nem mehet el, offline kell, vagy nagy a volumen és kicsi a komplexitás. Nem frontier képességre, és nem, ha egyébként nem kellő GPU-t üzemeltetnél. <b>A hibrid — lokális a tételre, hosztolt a nehéz farokra — általában győz</b>.</p>
+      </article>
+      <article class="card">
+        <span class="mono card__id">MODELS-04</span>
+        <h3 class="card__q"><span class="en">Agentic CLI vs IDE assistant?</span><span class="hu">Ágensi CLI vs IDE-asszisztens?</span></h3>
+        <p class="card__a en">An assistant accelerates your keystrokes; <b>a CLI takes a whole task</b> — reads, edits, runs tests, iterates. Filesystem and shell access is what makes it powerful and what makes permissions matter. Review discipline is the differentiator.</p>
+        <p class="card__a hu">Az asszisztens a gépelést gyorsítja; <b>a CLI egész feladatot vesz át</b> — olvas, szerkeszt, teszteket futtat, iterál. A fájl- és shell-hozzáférés adja az erejét és emiatt számítanak a jogosultságok. A review-fegyelem a differenciáló.</p>
+      </article>
+      <article class="card">
+        <span class="mono card__id">MODELS-05</span>
+        <h3 class="card__q"><span class="en">Antigravity — and the Gemini CLI?</span><span class="hu">Antigravity — és a Gemini CLI?</span></h3>
+        <p class="card__a en">Google's agent-first platform: Antigravity 2.0 (I/O 2026) added a standalone desktop app, an SDK and a Go-based <b>Antigravity CLI that replaced the Gemini CLI</b> — consumer Gemini CLI access ended 18 June 2026. Scripts on the old CLI need a real migration.</p>
+        <p class="card__a hu">A Google agent-first platformja: az Antigravity 2.0 (I/O 2026) önálló desktop appot, SDK-t és Go-alapú <b>Antigravity CLI-t adott, amely leváltotta a Gemini CLI-t</b> — a fogyasztói Gemini CLI elérés 2026. június 18-án véget ért. A régi CLI-re épülő szkriptek valódi migrációt kívánnak.</p>
+      </article>
+      <article class="card">
+        <span class="mono card__id">MODELS-06</span>
+        <h3 class="card__q"><span class="en">OpenClaw — what is it, and what's the catch?</span><span class="hu">OpenClaw — mi ez, és mi a csapda?</span></h3>
+        <p class="card__a en">A self-hosted personal agent that routes WhatsApp/Discord messages to an agent with shell, file and browser skills; model-agnostic. <b>Enormously useful and a substantial security surface</b> — if it touches work data, sandbox it and scope the credentials deliberately.</p>
+        <p class="card__a hu">Self-hostolt személyes ágens, amely WhatsApp/Discord üzeneteket irányít egy shell-, fájl- és böngésző-skillekkel bíró ágenshez; modell-agnosztikus. <b>Rendkívül hasznos és jelentős biztonsági felület</b> — ha munkahelyi adathoz ér, sandboxold és szűkítsd tudatosan a hitelesítő adatokat.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- GOV -->
+  <section class="domain" data-domain="gov">
+    <div class="domain__head">
+      <span class="mono domain__code">GOV</span>
+      <h2><span class="en">Security &amp; governance</span><span class="hu">Biztonság és governance</span></h2>
+      <span class="domain__note en">The failures that actually cost money.</span>
+      <span class="domain__note hu">Azok a hibák, amelyek valóban pénzbe kerülnek.</span>
+      <span class="mono domain__count">5</span>
+    </div>
+    <div class="cards">
+      <article class="card">
+        <span class="mono card__id">GOV-01</span>
+        <h3 class="card__q"><span class="en">What are the real risks?</span><span class="hu">Mik a valódi kockázatok?</span></h3>
+        <p class="card__a en">Data leakage, acting on wrong output, prompt injection, excessive permission, shadow AI, compliance exposure. <b>The technical failure modes are rarely the expensive ones — process and permission failures are</b>.</p>
+        <p class="card__a hu">Adatszivárgás, rossz kimenetre lépés, prompt injection, túlzott jogosultság, shadow AI, compliance-kitettség. <b>A technikai hibamódok ritkán a drágák — a folyamat- és jogosultsági hibák azok</b>.</p>
+      </article>
+      <article class="card">
+        <span class="mono card__id">GOV-02</span>
+        <h3 class="card__q"><span class="en">Prompt injection — how do you defend?</span><span class="hu">Prompt injection — hogyan védekezel?</span></h3>
+        <p class="card__a en">Not with a politer prompt. Least privilege, human confirmation for consequential actions, server-side policy, output validation, full logging, red-teaming. <b>Treat any text your agent reads as untrusted user input</b>.</p>
+        <p class="card__a hu">Nem kedvesebb prompttal. Legkisebb jogosultság, emberi megerősítés a következményes cselekvésekhez, szerveroldali policy, kimenet-validáció, teljes logolás, red-teaming. <b>Kezelj minden szöveget, amit az ágens olvas, nem bizalmi bemenetként</b>.</p>
+      </article>
+      <article class="card">
+        <span class="mono card__id">GOV-03</span>
+        <h3 class="card__q"><span class="en">What should an AI policy say?</span><span class="hu">Mit mondjon egy AI-szabályzat?</span></h3>
+        <p class="card__a en">Approved tools, data classification with concrete examples, review requirements, disclosure, accountability, where to report. <b>Make the compliant path easier than the non-compliant one</b>, or people use personal accounts.</p>
+        <p class="card__a hu">Jóváhagyott eszközök, adatosztályozás konkrét példákkal, review-követelmények, közlés, elszámoltathatóság, hova jelents. <b>A megfelelő út legyen könnyebb a nem megfelelőnél</b>, különben a személyes fiókot használják.</p>
+      </article>
+      <article class="card">
+        <span class="mono card__id">GOV-04</span>
+        <h3 class="card__q"><span class="en">Where does a human stay in the loop?</span><span class="hu">Hol maradjon az ember a hurokban?</span></h3>
+        <p class="card__a en">Decide from reversibility × cost of error. Before the action if irreversible; after generation for drafts; sampled for low-stakes volume. <b>Define graduation criteria, or review becomes permanent cost</b>.</p>
+        <p class="card__a hu">Visszafordíthatóság × a tévedés költsége alapján dönts. A cselekvés előtt, ha visszafordíthatatlan; generálás után vázlatoknál; mintavételesen kis tétű volumennél. <b>Definiálj graduációs kritériumot, különben a review állandó költség lesz</b>.</p>
+      </article>
+      <article class="card">
+        <span class="mono card__id">GOV-05</span>
+        <h3 class="card__q"><span class="en">How do you roll this out without it flopping?</span><span class="hu">Hogyan vezesd be úgy, hogy ne bukjon meg?</span></h3>
+        <p class="card__a en">Start from a named pain, go deep on one workflow, measure the baseline first, involve the people who do the work, <b>be honest about failure modes</b> — and teach the mental model, not the buttons.</p>
+        <p class="card__a hu">Indulj megnevezett fájdalomból, menj mélyre egy munkafolyamaton, először mérd az alapvonalat, vond be azokat, akik a munkát végzik, <b>legyél őszinte a hibamódokkal</b> — és a gondolati modellt tanítsd, ne a gombokat.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- MYTHS -->
+  <aside class="panel">
+    <span class="mono panel__eyebrow"><span class="en">Costly beliefs</span><span class="hu">Drága hitek</span></span>
+    <h2><span class="en">Five beliefs that cause real damage</span><span class="hu">Öt hit, amely valódi kárt okoz</span></h2>
+    <ol>
+      <li>
+        <span class="en"><b>"The model will learn from our usage."</b> Weights change only during training. Without a data flywheel, nothing improves by itself.</span>
+        <span class="hu"><b>„A modell tanul a használatunkból."</b> A súlyok csak tanítás közben változnak. Adat-lendkerék nélkül semmi nem javul magától.</span>
+      </li>
+      <li>
+        <span class="en"><b>"We'll fine-tune it on our data so it knows our business."</b> Fine-tuning teaches behaviour, not facts. Knowledge is retrieval.</span>
+        <span class="hu"><b>„Finomhangoljuk az adatainkon, hogy ismerje a cégünket."</b> A finomhangolás viselkedést tanít, nem tényeket. A tudás: retrieval.</span>
+      </li>
+      <li>
+        <span class="en"><b>"We'll instruct it not to hallucinate."</b> An instruction cannot create a missing fact. Fix the information architecture instead.</span>
+        <span class="hu"><b>„Beírjuk, hogy ne hallucináljon."</b> Az utasítás nem hoz létre hiányzó tényt. Az információ-architektúrát javítsd.</span>
+      </li>
+      <li>
+        <span class="en"><b>"The model broke."</b> Most "model" incidents are data incidents. Check the upstream pipeline before retraining anything.</span>
+        <span class="hu"><b>„Elromlott a modell."</b> A „modell"-incidensek többsége adatincidens. Ellenőrizd a felső pipeline-t, mielőtt bármit újratanítanál.</span>
+      </li>
+      <li>
+        <span class="en"><b>"Thumbs-up/down will tell us if it's working."</b> That signal is sparse and biased. You need a golden set, a launch bar and a regression gate.</span>
+        <span class="hu"><b>„A fel/le jelzésből megtudjuk, működik-e."</b> Az a jel ritka és torzított. Golden set, indulási küszöb és regressziós kapu kell.</span>
+      </li>
+    </ol>
+  </aside>
+
+  <!-- CALIBRATION -->
+  <section class="calib">
+    <div class="domain__head">
+      <span class="mono domain__code">CAL</span>
+      <h2><span class="en">Calibration strip</span><span class="hu">Kalibrációs csík</span></h2>
+      <span class="domain__note en">Twelve sentences worth having word-perfect.</span>
+      <span class="domain__note hu">Tizenkét mondat, amit szó szerint érdemes tudni.</span>
+      <span class="mono domain__count">12</span>
+    </div>
+    <div class="calib__grid">
+      <div class="calib__item"><span class="calib__n">01</span><p><b>LLM</b><span class="en">A transformer trained to predict the next token — optimised for fluency, not truth.</span><span class="hu">A következő token megjóslására tanított transformer — folyékonyságra optimalizálva, nem igazságra.</span></p></div>
+      <div class="calib__item"><span class="calib__n">02</span><p><b><span class="en">Hallucination</span><span class="hu">Hallucináció</span></b><span class="en">Fluent, confident, unsupported output — a measured rate, never an eliminated phenomenon.</span><span class="hu">Folyékony, magabiztos, alátámasztatlan kimenet — mért arány, nem megszüntetett jelenség.</span></p></div>
+      <div class="calib__item"><span class="calib__n">03</span><p><b>Temperature</b><span class="en">Sharpens or flattens the output distribution — a consistency dial, not an accuracy dial.</span><span class="hu">Élesíti vagy lapítja a kimeneti eloszlást — konzisztencia-, nem pontossági szabályzó.</span></p></div>
+      <div class="calib__item"><span class="calib__n">04</span><p><b>Context window</b><span class="en">One token budget covering prompt, history, retrieval, tools and output. Spend it deliberately.</span><span class="hu">Egyetlen tokenbüdzsé: prompt, előzmény, retrieval, eszközök, kimenet. Tudatosan költsd.</span></p></div>
+      <div class="calib__item"><span class="calib__n">05</span><p><b><span class="en">Weights</span><span class="hu">Súlyok</span></b><span class="en">They change only during training — prompting, RAG and long chats teach the model nothing.</span><span class="hu">Csak tanítás közben változnak — a prompt, a RAG és a hosszú beszélgetés nem tanít semmit.</span></p></div>
+      <div class="calib__item"><span class="calib__n">06</span><p><b>Tool calling</b><span class="en">The model emits an intent; your code validates, authorises and executes it.</span><span class="hu">A modell szándékot ad ki; a te kódod validál, engedélyez és végrehajt.</span></p></div>
+      <div class="calib__item"><span class="calib__n">07</span><p><b>ML vs GenAI</b><span class="en">Classic ML for prediction over structured data, generative for unstructured language. Use both.</span><span class="hu">Klasszikus ML predikcióra strukturált adaton, generatív a strukturálatlan nyelvre. Használd mindkettőt.</span></p></div>
+      <div class="calib__item"><span class="calib__n">08</span><p><b>RAG</b><span class="en">Knowledge → retrieval. Behaviour → fine-tuning. Everything → try prompting first.</span><span class="hu">Tudás → retrieval. Viselkedés → finomhangolás. Minden → először prompt.</span></p></div>
+      <div class="calib__item"><span class="calib__n">09</span><p><b><span class="en">Two failure modes</span><span class="hu">Két hibamód</span></b><span class="en">Retrieval failure or generation failure — establish which before changing anything.</span><span class="hu">Retrieval-hiba vagy generálási hiba — állapítsd meg, melyik, mielőtt bármit változtatnál.</span></p></div>
+      <div class="calib__item"><span class="calib__n">10</span><p><b>Routing</b><span class="en">Send the easy 80% to a cheap model. Usually the difference between viable and unviable economics.</span><span class="hu">A könnyű 80%-ot olcsó modellre. Általában ez a különbség életképes és életképtelen között.</span></p></div>
+      <div class="calib__item"><span class="calib__n">11</span><p><b><span class="en">Evaluation</span><span class="hu">Kiértékelés</span></b><span class="en">Define "good" and the launch bar before measuring; grow the golden set from real failures.</span><span class="hu">A „jó"-t és az indulási küszöböt a mérés előtt definiáld; a golden set valós hibákból nőjön.</span></p></div>
+      <div class="calib__item"><span class="calib__n">12</span><p><b><span class="en">Durable assets</span><span class="hu">Tartós eszközök</span></b><span class="en">Models depreciate in months; the eval harness, data flywheel and workflow don't.</span><span class="hu">A modellek hónapok alatt amortizálódnak; az eval-harness, az adat-lendkerék és a munkafolyamat nem.</span></p></div>
+    </div>
+  </section>
+
+  <footer>
+    <p class="mono"><span class="en">Workplace AI field guide · EN / HU · snapshot: mid-2026</span><span class="hu">Munkahelyi AI kisokos · EN / HU · pillanatkép: 2026 közepe</span></p>
+    <p>
+      <span class="en">Full explanations: <b>AI-at-Work-Field-Guide-EN.md</b> and <b>AI-a-munkahelyen-Kisokos-HU.md</b>. Fast-moving claims about specific models, CLIs and tool versions reflect mid-2026 — re-check before relying on them.</span>
+      <span class="hu">Részletes magyarázatok: <b>AI-at-Work-Field-Guide-EN.md</b> és <b>AI-a-munkahelyen-Kisokos-HU.md</b>. A konkrét modellekre, CLI-kre és eszközverziókra vonatkozó, gyorsan változó állítások 2026 közepét tükrözik — ellenőrizd, mielőtt támaszkodsz rájuk.</span>
+    </p>
+    <p>
+      <span class="en">Sources for the tooling section: <a href="https://developers.googleblog.com/an-important-update-transitioning-gemini-cli-to-antigravity-cli/">Google Developers Blog</a> · <a href="https://antigravity.google/blog/google-io-2026">Antigravity @ I/O 2026</a> · <a href="https://www.digitalocean.com/resources/articles/what-is-openclaw">DigitalOcean on OpenClaw</a> · <a href="https://github.com/openclaw">OpenClaw on GitHub</a></span>
+      <span class="hu">Az eszköz-szekció forrásai: <a href="https://developers.googleblog.com/an-important-update-transitioning-gemini-cli-to-antigravity-cli/">Google Developers Blog</a> · <a href="https://antigravity.google/blog/google-io-2026">Antigravity @ I/O 2026</a> · <a href="https://www.digitalocean.com/resources/articles/what-is-openclaw">DigitalOcean az OpenClaw-ról</a> · <a href="https://github.com/openclaw">OpenClaw a GitHubon</a></span>
+    </p>
+  </footer>
+</div>
+
+<script>
+  (function () {
+    var root = document.documentElement;
+
+    var langButtons = document.querySelectorAll('.lang button');
+    langButtons.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        root.setAttribute('data-lang', btn.getAttribute('data-lang'));
+        langButtons.forEach(function (b) {
+          b.setAttribute('aria-pressed', String(b === btn));
+        });
+      });
+    });
+
+    var chips = document.querySelectorAll('.chip');
+    var sections = document.querySelectorAll('.domain');
+    chips.forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        var target = chip.getAttribute('data-filter');
+        chips.forEach(function (c) {
+          c.setAttribute('aria-pressed', String(c === chip));
+        });
+        sections.forEach(function (s) {
+          var show = target === 'all' || s.getAttribute('data-domain') === target;
+          s.classList.toggle('hidden', !show);
+        });
+      });
+    });
+  })();
+</script>
