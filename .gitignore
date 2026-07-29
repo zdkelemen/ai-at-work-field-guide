@@ -1,6 +1,9 @@
 # Local working folder — source material and superseded drafts, not published
 temp/
 
+# Content drafts — kept local, not part of the published guide
+linkedin-posts.md
+
 # Tooling
 .claude/
 
